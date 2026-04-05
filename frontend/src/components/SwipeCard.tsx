@@ -1,6 +1,7 @@
 import { motion, useAnimation } from "framer-motion";
 import { useSwipe } from "../hooks/useSwipe";
 import { CardContent } from "./CardContent";
+import { OnboardingOverlay } from "./OnboardingOverlay";
 import { SwipeOverlay } from "./SwipeOverlay";
 import type { FeedItem, SwipeDirection } from "../types";
 
@@ -48,11 +49,14 @@ export function SwipeCard({ item, onSwipe, isTop, stackIndex }: Props) {
       whileTap={isTop ? { scale: 0.98 } : undefined}
     >
       {isTop && (
-        <SwipeOverlay
-          likeOpacity={likeOpacity}
-          nopeOpacity={nopeOpacity}
-          saveOpacity={saveOpacity}
-        />
+        <>
+          <SwipeOverlay
+            likeOpacity={likeOpacity}
+            nopeOpacity={nopeOpacity}
+            saveOpacity={saveOpacity}
+          />
+          <OnboardingOverlay />
+        </>
       )}
       <CardContent item={item} />
     </motion.div>
