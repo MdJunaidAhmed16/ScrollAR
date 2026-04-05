@@ -17,20 +17,11 @@ services:
           name: scrollar-db
           property: connectionString
       - key: REDIS_URL
-        fromService:
-          name: scrollar-redis
-          type: redis
-          property: connectionString
+        sync: false
       - key: CELERY_BROKER_URL
-        fromService:
-          name: scrollar-redis
-          type: redis
-          property: connectionString
+        sync: false
       - key: CELERY_RESULT_BACKEND
-        fromService:
-          name: scrollar-redis
-          type: redis
-          property: connectionString
+        sync: false
       - key: SECRET_KEY
         generateValue: true
       - key: ALGORITHM
@@ -45,6 +36,8 @@ services:
         value: anthropic/claude-sonnet-4-5
       - key: OPENROUTER_SITE_NAME
         value: ScrollAr
+      - key: OPENROUTER_SITE_URL
+        sync: false
       - key: ARXIV_CATEGORIES
         value: cs.AI,cs.LG,cs.CV,stat.ML,cs.CL
       - key: ARXIV_FETCH_LIMIT
@@ -76,25 +69,13 @@ services:
           name: scrollar-db
           property: connectionString
       - key: REDIS_URL
-        fromService:
-          name: scrollar-redis
-          type: redis
-          property: connectionString
+        sync: false
       - key: CELERY_BROKER_URL
-        fromService:
-          name: scrollar-redis
-          type: redis
-          property: connectionString
+        sync: false
       - key: CELERY_RESULT_BACKEND
-        fromService:
-          name: scrollar-redis
-          type: redis
-          property: connectionString
+        sync: false
       - key: SECRET_KEY
-        fromService:
-          name: scrollar-api
-          type: web
-          envVarKey: SECRET_KEY
+        sync: false
       - key: OPENROUTER_API_KEY
         sync: false
       - key: OPENROUTER_BASE_URL
@@ -128,20 +109,11 @@ services:
           name: scrollar-db
           property: connectionString
       - key: REDIS_URL
-        fromService:
-          name: scrollar-redis
-          type: redis
-          property: connectionString
+        sync: false
       - key: CELERY_BROKER_URL
-        fromService:
-          name: scrollar-redis
-          type: redis
-          property: connectionString
+        sync: false
       - key: CELERY_RESULT_BACKEND
-        fromService:
-          name: scrollar-redis
-          type: redis
-          property: connectionString
+        sync: false
       - key: DEBUG
         value: "false"
 
@@ -150,6 +122,3 @@ databases:
     plan: free
     databaseName: scrollar
     user: scrollar
-
-  - name: scrollar-redis
-    plan: free
