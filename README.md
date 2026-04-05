@@ -6,6 +6,10 @@ ScrollAr pulls the latest papers from arXiv daily, summarises each one with Clau
 
 🔗 **[scrollar-beta.vercel.app](https://scrollar-beta.vercel.app)**
 
+
+https://github.com/user-attachments/assets/951ef438-c969-43e9-ab47-f2b51518843f
+
+
 ---
 
 ## What it does
