@@ -44,6 +44,10 @@ logs/
 .vscode/settings.json
 .idea/
 
+# Firebase service account — never commit
+*firebase-adminsdk*.json
+*service-account*.json
+
 .claude/
 
 promo-video/

@@ -1,20 +1,22 @@
 import axios from "axios";
+import { auth } from "../firebase";
 
 const client = axios.create({
   baseURL: import.meta.env.VITE_API_URL ?? "/api",
   headers: { "Content-Type": "application/json" },
 });
 
-// Inject JWT on every request
-client.interceptors.request.use((config) => {
-  const token = localStorage.getItem("scrollar_token");
-  if (token) {
+// Inject Firebase ID token on every request (auto-refreshes if expired)
+client.interceptors.request.use(async (config) => {
+  const firebaseUser = auth.currentUser;
+  if (firebaseUser) {
+    const token = await firebaseUser.getIdToken();
     config.headers.Authorization = `Bearer ${token}`;
   }
   return config;
 });
 
-// On 401, dispatch a global logout event (avoids circular import with store)
+// On 401, dispatch a global logout event
 client.interceptors.response.use(
   (res) => res,
   (error) => {

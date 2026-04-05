@@ -25,9 +25,6 @@ def _trigger_ingestion():
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    if settings.SECRET_KEY in ("change-me-in-production", "CHANGE_ME_GENERATE_A_REAL_SECRET"):
-        raise RuntimeError("SECRET_KEY is still the default — set a real secret in .env")
-
     # Auto-trigger ingestion if no cards yet
     try:
         from sqlalchemy import select, func

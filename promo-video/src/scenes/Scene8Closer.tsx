@@ -194,7 +194,7 @@ export const Scene8Closer: React.FC = () => {
             letterSpacing: 1,
           }}
         >
-          scrollar.app
+          scrollar-beta.vercel.app
         </div>
       </div>
 

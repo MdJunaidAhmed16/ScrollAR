@@ -5,10 +5,7 @@ import { DesktopGate } from "./components/DesktopGate";
 import { Navbar } from "./components/Navbar";
 import { AdminPage } from "./pages/AdminPage";
 import { FeedPage } from "./pages/FeedPage";
-import { ForgotPasswordPage } from "./pages/ForgotPasswordPage";
-import { ResetPasswordPage } from "./pages/ResetPasswordPage";
 import { LoginPage } from "./pages/LoginPage";
-import { RegisterPage } from "./pages/RegisterPage";
 import { BookmarksPage } from "./pages/BookmarksPage";
 import { useAuthStore } from "./store/authStore";
 
@@ -22,19 +19,20 @@ const queryClient = new QueryClient({
 });
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const token = useAuthStore((s) => s.token);
-  if (!token) return <Navigate to="/login" replace />;
+  const { user, isLoading } = useAuthStore();
+  if (isLoading) return null; // wait for Firebase to resolve
+  if (!user) return <Navigate to="/login" replace />;
   return <>{children}</>;
 }
 
 function AppInner() {
-  const { loadFromStorage, logout } = useAuthStore();
+  const { init, logout } = useAuthStore();
 
   useEffect(() => {
-    loadFromStorage();
-  }, []);
+    const unsubscribe = init();
+    return unsubscribe;
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Listen for the global logout event fired by the axios interceptor on 401
   useEffect(() => {
     const handler = () => logout();
     window.addEventListener("scrollar:logout", handler);
@@ -49,9 +47,6 @@ function AppInner() {
           <Routes>
             <Route path="/" element={<Navigate to="/feed" replace />} />
             <Route path="/login" element={<LoginPage />} />
-            <Route path="/register" element={<RegisterPage />} />
-            <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-            <Route path="/reset-password" element={<ResetPasswordPage />} />
             <Route
               path="/feed"
               element={

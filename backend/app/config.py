@@ -33,6 +33,9 @@ class Settings(BaseSettings):
     # CORS
     ALLOWED_ORIGINS: str = "http://localhost:5173,http://localhost:3000"
 
+    # Firebase
+    FIREBASE_CREDENTIALS_JSON: str = ""  # entire service-account JSON as a single env var string
+
     # Admin
     ADMIN_EMAIL: str = ""  # email of the superuser account
 

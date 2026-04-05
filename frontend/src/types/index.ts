@@ -44,12 +44,6 @@ export interface FeedResponse {
   total_returned: number;
 }
 
-export interface TokenResponse {
-  access_token: string;
-  token_type: string;
-  user: User;
-}
-
 export type SwipeDirection = "left" | "right" | "up";
 
 export interface SwipeRequest {
