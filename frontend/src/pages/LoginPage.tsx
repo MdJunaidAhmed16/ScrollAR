@@ -77,9 +77,15 @@ export function LoginPage() {
             <div className="text-3xl mb-3">📬</div>
             <p className="text-white font-semibold">Check your inbox</p>
             <p className="text-gray-400 text-sm mt-2">
-              We sent a sign-in link to <strong className="text-white">{email}</strong>.<br />
-              Tap the link in the email to continue.
+              We sent a sign-in link to <strong className="text-white">{email}</strong>.
+              Tap the link to continue.
             </p>
+            <div className="mt-3 flex items-start gap-2 bg-yellow-500/10 border border-yellow-500/20 rounded-xl px-3 py-2 text-left">
+              <span className="text-yellow-400 mt-0.5 text-sm">⚠</span>
+              <p className="text-yellow-300 text-xs leading-relaxed">
+                The email may land in your <strong>spam or junk folder</strong>. Check there if you don't see it in your inbox within a minute.
+              </p>
+            </div>
             <button
               onClick={() => { setLinkSent(false); clearError(); }}
               className="mt-4 text-xs text-brand-500 hover:text-brand-400"
