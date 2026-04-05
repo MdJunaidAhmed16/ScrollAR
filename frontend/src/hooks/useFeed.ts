@@ -11,7 +11,9 @@ export function useFeed() {
     staleTime: 1000 * 60 * 5, // 5 minutes
   });
 
-  const cards: FeedItem[] = query.data?.pages.flatMap((p) => p.items) ?? [];
+  const cards: FeedItem[] = (query.data?.pages.flatMap((p) => p.items) ?? []).filter(
+    (item): item is FeedItem => item != null && item.paper != null
+  );
 
   return {
     cards,
