@@ -2,6 +2,7 @@ from contextlib import asynccontextmanager
 import logging
 
 import redis.asyncio as aioredis
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from fastapi import FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from slowapi import Limiter, _rate_limit_exceeded_handler
@@ -14,32 +15,21 @@ from app.database import engine
 from app.routes import auth, feed, papers, admin
 
 logger = logging.getLogger("scrollar")
-
-# Global rate limiter — shared across routes
 limiter = Limiter(key_func=get_remote_address)
+
+
+def _trigger_ingestion():
+    from app.tasks.ingest_arxiv import ingest_arxiv_task
+    ingest_arxiv_task.delay()
+    logger.info("Scheduled ingestion triggered")
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Validate critical secrets on startup
-    if settings.SECRET_KEY in ("change-me-in-production", "change-me-in-production-use-32-random-chars-min"):
-        raise RuntimeError("SECRET_KEY is still the default value — set a real secret in .env")
+    if settings.SECRET_KEY in ("change-me-in-production", "CHANGE_ME_GENERATE_A_REAL_SECRET"):
+        raise RuntimeError("SECRET_KEY is still the default — set a real secret in .env")
 
-    # Run DB migrations
-    import subprocess
-    try:
-        result = subprocess.run(
-            ["alembic", "upgrade", "head"],
-            capture_output=True, text=True, timeout=60
-        )
-        if result.returncode != 0:
-            logger.error(f"Alembic migration failed:\n{result.stderr}")
-        else:
-            logger.info("Database migrations applied successfully")
-    except FileNotFoundError:
-        logger.warning("alembic not found on PATH — skipping auto-migration")
-
-    # Auto-trigger ingestion if no papers OR papers exist without cards
+    # Auto-trigger ingestion if no cards yet
     try:
         from sqlalchemy import select, func
         from app.database import async_session_maker
@@ -49,12 +39,23 @@ async def lifespan(app: FastAPI):
             card_count = await session.scalar(select(func.count()).select_from(Card))
         if paper_count == 0 or card_count < paper_count:
             logger.info(f"Found {paper_count} papers, {card_count} cards — triggering ingestion...")
-            from app.tasks.ingest_arxiv import ingest_arxiv_task
-            ingest_arxiv_task.delay()
+            _trigger_ingestion()
     except Exception as e:
         logger.error(f"Failed to trigger initial ingestion: {e}")
 
+    # APScheduler replaces Celery Beat — runs ingestion every N hours
+    scheduler = AsyncIOScheduler()
+    scheduler.add_job(
+        _trigger_ingestion,
+        "interval",
+        hours=settings.ARXIV_INGEST_INTERVAL_HOURS,
+        id="ingest_arxiv",
+    )
+    scheduler.start()
+
     yield
+
+    scheduler.shutdown()
     await engine.dispose()
 
 
@@ -62,17 +63,14 @@ app = FastAPI(
     title="ScrollAr API",
     version=settings.APP_VERSION,
     lifespan=lifespan,
-    # Disable interactive docs in production
     docs_url="/docs" if settings.DEBUG else None,
     redoc_url="/redoc" if settings.DEBUG else None,
     openapi_url="/openapi.json" if settings.DEBUG else None,
 )
 
-# Rate limiting
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
-# CORS — only allow configured origins
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.allowed_origins_list,
@@ -82,7 +80,6 @@ app.add_middleware(
 )
 
 
-# Security headers on every response
 @app.middleware("http")
 async def security_headers(request: Request, call_next):
     response: Response = await call_next(request)

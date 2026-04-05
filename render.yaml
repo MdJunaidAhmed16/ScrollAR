@@ -1,20 +1,20 @@
 services:
-  # FastAPI Backend
   - type: web
-    name: scrollar-api
+    name: scrollar_api
     runtime: docker
     dockerfilePath: ./backend/Dockerfile
     dockerContext: ./backend
+    dockerCommand: ./start.sh
     plan: free
     healthCheckPath: /health
     envVars:
       - key: DATABASE_URL
         fromDatabase:
-          name: scrollar-db
+          name: scrollar_db
           property: connectionString
       - key: DATABASE_URL_SYNC
         fromDatabase:
-          name: scrollar-db
+          name: scrollar_db
           property: connectionString
       - key: REDIS_URL
         sync: false
@@ -51,74 +51,8 @@ services:
       - key: DEBUG
         value: "false"
 
-  # Celery Worker
-  - type: worker
-    name: scrollar-worker
-    runtime: docker
-    dockerfilePath: ./backend/Dockerfile
-    dockerContext: ./backend
-    plan: free
-    dockerCommand: celery -A app.tasks.celery_app worker --loglevel=info --concurrency=2
-    envVars:
-      - key: DATABASE_URL
-        fromDatabase:
-          name: scrollar-db
-          property: connectionString
-      - key: DATABASE_URL_SYNC
-        fromDatabase:
-          name: scrollar-db
-          property: connectionString
-      - key: REDIS_URL
-        sync: false
-      - key: CELERY_BROKER_URL
-        sync: false
-      - key: CELERY_RESULT_BACKEND
-        sync: false
-      - key: SECRET_KEY
-        sync: false
-      - key: OPENROUTER_API_KEY
-        sync: false
-      - key: OPENROUTER_BASE_URL
-        value: https://openrouter.ai/api/v1
-      - key: OPENROUTER_MODEL
-        value: anthropic/claude-sonnet-4-5
-      - key: ARXIV_CATEGORIES
-        value: cs.AI,cs.LG,cs.CV,stat.ML,cs.CL
-      - key: ARXIV_FETCH_LIMIT
-        value: "100"
-      - key: ADMIN_EMAIL
-        sync: false
-      - key: DEBUG
-        value: "false"
-
-  # Celery Beat Scheduler
-  - type: worker
-    name: scrollar-beat
-    runtime: docker
-    dockerfilePath: ./backend/Dockerfile
-    dockerContext: ./backend
-    plan: free
-    dockerCommand: celery -A app.tasks.celery_app beat --loglevel=info
-    envVars:
-      - key: DATABASE_URL
-        fromDatabase:
-          name: scrollar-db
-          property: connectionString
-      - key: DATABASE_URL_SYNC
-        fromDatabase:
-          name: scrollar-db
-          property: connectionString
-      - key: REDIS_URL
-        sync: false
-      - key: CELERY_BROKER_URL
-        sync: false
-      - key: CELERY_RESULT_BACKEND
-        sync: false
-      - key: DEBUG
-        value: "false"
-
 databases:
-  - name: scrollar-db
+  - name: scrollar_db
     plan: free
     databaseName: scrollar
     user: scrollar

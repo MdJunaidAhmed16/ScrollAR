@@ -12,6 +12,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
-# Run alembic migrations then start the server (for api service)
-# The worker/beat services override CMD in docker-compose
-CMD ["sh", "-c", "alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port 8000"]
+RUN chmod +x start.sh
+
+# Local dev: just run uvicorn (docker-compose handles migrations separately)
+# Production (Render): start.sh runs migrations + worker + uvicorn together
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
