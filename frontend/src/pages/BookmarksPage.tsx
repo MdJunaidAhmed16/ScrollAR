@@ -24,10 +24,11 @@ function BookmarkCard({ item }: { item: FeedItem }) {
 }
 
 export function BookmarksPage() {
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError } = useQuery({
     queryKey: ["bookmarks"],
     queryFn: feedApi.getBookmarks,
   });
+  const items = Array.isArray(data) ? data : [];
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-8">
@@ -37,12 +38,15 @@ export function BookmarksPage() {
           <div className="w-8 h-8 border-2 border-brand-500 border-t-transparent rounded-full animate-spin" />
         </div>
       )}
-      {data && data.length === 0 && (
-        <p className="text-gray-500 text-center py-12">No saved papers yet. Swipe up to save!</p>
+      {isError && (
+        <p className="text-red-400 text-center py-12">Failed to load saved papers. Please refresh.</p>
       )}
-      {data && (
+      {!isLoading && !isError && items.length === 0 && (
+        <p className="text-gray-500 text-center py-12">No saved papers yet. Tap the bookmark button to save!</p>
+      )}
+      {items.length > 0 && (
         <div className="flex flex-col gap-4">
-          {data.map((item) => (
+          {items.map((item) => (
             <BookmarkCard key={item.paper.id} item={item} />
           ))}
         </div>
