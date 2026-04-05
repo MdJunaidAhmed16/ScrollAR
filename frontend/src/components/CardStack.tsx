@@ -52,8 +52,8 @@ export function CardStack({ onButtonsReady }: { onButtonsReady?: (trigger: (d: S
       <div className="flex items-center justify-center h-full">
         <div className="text-center text-gray-400 px-8">
           <div className="w-10 h-10 border-2 border-brand-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-lg font-semibold text-white">Fetching papers…</p>
-          <p className="text-sm mt-2">We're pulling the latest research from arXiv.<br />This takes about 2–3 minutes on first load.</p>
+          <p className="text-lg font-semibold text-white">Loading your feed…</p>
+          <p className="text-sm mt-2">Hang on, this should only take a few seconds.</p>
           <button
             onClick={() => window.location.reload()}
             className="mt-6 text-sm text-brand-500 hover:text-brand-400 underline"
