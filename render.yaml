@@ -1,0 +1,155 @@
+services:
+  # FastAPI Backend
+  - type: web
+    name: scrollar-api
+    runtime: docker
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    plan: free
+    healthCheckPath: /health
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: scrollar-db
+          property: connectionString
+      - key: DATABASE_URL_SYNC
+        fromDatabase:
+          name: scrollar-db
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          name: scrollar-redis
+          type: redis
+          property: connectionString
+      - key: CELERY_BROKER_URL
+        fromService:
+          name: scrollar-redis
+          type: redis
+          property: connectionString
+      - key: CELERY_RESULT_BACKEND
+        fromService:
+          name: scrollar-redis
+          type: redis
+          property: connectionString
+      - key: SECRET_KEY
+        generateValue: true
+      - key: ALGORITHM
+        value: HS256
+      - key: ACCESS_TOKEN_EXPIRE_MINUTES
+        value: "10080"
+      - key: OPENROUTER_API_KEY
+        sync: false
+      - key: OPENROUTER_BASE_URL
+        value: https://openrouter.ai/api/v1
+      - key: OPENROUTER_MODEL
+        value: anthropic/claude-sonnet-4-5
+      - key: OPENROUTER_SITE_NAME
+        value: ScrollAr
+      - key: ARXIV_CATEGORIES
+        value: cs.AI,cs.LG,cs.CV,stat.ML,cs.CL
+      - key: ARXIV_FETCH_LIMIT
+        value: "100"
+      - key: ARXIV_INGEST_INTERVAL_HOURS
+        value: "6"
+      - key: ALLOWED_ORIGINS
+        sync: false
+      - key: ADMIN_EMAIL
+        sync: false
+      - key: DEBUG
+        value: "false"
+
+  # Celery Worker
+  - type: worker
+    name: scrollar-worker
+    runtime: docker
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    plan: free
+    dockerCommand: celery -A app.tasks.celery_app worker --loglevel=info --concurrency=2
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: scrollar-db
+          property: connectionString
+      - key: DATABASE_URL_SYNC
+        fromDatabase:
+          name: scrollar-db
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          name: scrollar-redis
+          type: redis
+          property: connectionString
+      - key: CELERY_BROKER_URL
+        fromService:
+          name: scrollar-redis
+          type: redis
+          property: connectionString
+      - key: CELERY_RESULT_BACKEND
+        fromService:
+          name: scrollar-redis
+          type: redis
+          property: connectionString
+      - key: SECRET_KEY
+        fromService:
+          name: scrollar-api
+          type: web
+          envVarKey: SECRET_KEY
+      - key: OPENROUTER_API_KEY
+        sync: false
+      - key: OPENROUTER_BASE_URL
+        value: https://openrouter.ai/api/v1
+      - key: OPENROUTER_MODEL
+        value: anthropic/claude-sonnet-4-5
+      - key: ARXIV_CATEGORIES
+        value: cs.AI,cs.LG,cs.CV,stat.ML,cs.CL
+      - key: ARXIV_FETCH_LIMIT
+        value: "100"
+      - key: ADMIN_EMAIL
+        sync: false
+      - key: DEBUG
+        value: "false"
+
+  # Celery Beat Scheduler
+  - type: worker
+    name: scrollar-beat
+    runtime: docker
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    plan: free
+    dockerCommand: celery -A app.tasks.celery_app beat --loglevel=info
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: scrollar-db
+          property: connectionString
+      - key: DATABASE_URL_SYNC
+        fromDatabase:
+          name: scrollar-db
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          name: scrollar-redis
+          type: redis
+          property: connectionString
+      - key: CELERY_BROKER_URL
+        fromService:
+          name: scrollar-redis
+          type: redis
+          property: connectionString
+      - key: CELERY_RESULT_BACKEND
+        fromService:
+          name: scrollar-redis
+          type: redis
+          property: connectionString
+      - key: DEBUG
+        value: "false"
+
+databases:
+  - name: scrollar-db
+    plan: free
+    databaseName: scrollar
+    user: scrollar
+
+  - name: scrollar-redis
+    plan: free
