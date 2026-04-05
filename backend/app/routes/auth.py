@@ -1,7 +1,7 @@
 import secrets
 from datetime import datetime, timedelta, timezone
 
-from fastapi import APIRouter, Depends, HTTPException, Request, status
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Request, status
 from sqlalchemy import func, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -77,7 +77,12 @@ async def me(current_user: User = Depends(get_current_user), db: AsyncSession = 
 
 @router.post("/forgot-password", status_code=status.HTTP_204_NO_CONTENT)
 @limiter.limit("3/minute")
-async def forgot_password(request: Request, payload: ForgotPasswordRequest, db: AsyncSession = Depends(get_db)):
+async def forgot_password(
+    request: Request,
+    payload: ForgotPasswordRequest,
+    background_tasks: BackgroundTasks,
+    db: AsyncSession = Depends(get_db),
+):
     result = await db.execute(select(User).where(User.email == payload.email))
     user = result.scalar_one_or_none()
 
@@ -92,7 +97,7 @@ async def forgot_password(request: Request, payload: ForgotPasswordRequest, db: 
     await db.commit()
 
     reset_url = f"{FRONTEND_URL}/reset-password?token={token}"
-    send_password_reset(user.email, reset_url)
+    background_tasks.add_task(send_password_reset, user.email, reset_url)
 
 
 @router.post("/reset-password", status_code=status.HTTP_204_NO_CONTENT)
