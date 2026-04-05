@@ -33,18 +33,25 @@ async def get_current_user(
     user = result.scalar_one_or_none()
 
     if user is None:
-        # First sign-in — create the user
-        username = _derive_username(email)
+        # Check if an old account exists with this email (pre-Firebase migration)
+        result2 = await db.execute(select(User).where(User.email == email))
+        user = result2.scalar_one_or_none()
 
-        # Ensure username uniqueness
-        existing = await db.execute(select(User.username).where(User.username == username))
-        if existing.scalar_one_or_none():
-            username = f"{username}_{secrets.token_hex(3)}"
-
-        user = User(firebase_uid=firebase_uid, email=email, username=username)
-        db.add(user)
-        await db.commit()
-        await db.refresh(user)
+        if user is not None:
+            # Link existing account to Firebase UID
+            user.firebase_uid = firebase_uid
+            await db.commit()
+            await db.refresh(user)
+        else:
+            # Brand new user — create them
+            username = _derive_username(email)
+            existing = await db.execute(select(User.username).where(User.username == username))
+            if existing.scalar_one_or_none():
+                username = f"{username}_{secrets.token_hex(3)}"
+            user = User(firebase_uid=firebase_uid, email=email, username=username)
+            db.add(user)
+            await db.commit()
+            await db.refresh(user)
 
     if not user.is_active:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Account inactive")
