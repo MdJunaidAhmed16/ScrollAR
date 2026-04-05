@@ -49,6 +49,7 @@ export function SwipeCard({ item, onSwipe, isTop, stackIndex }: Props) {
     <motion.div
       className="absolute inset-0 rounded-3xl overflow-hidden cursor-grab active:cursor-grabbing"
       style={{
+        touchAction: "none",
         x: isTop ? x : 0,
         y: isTop ? y : yOffset,
         rotate: isTop ? rotate : 0,
