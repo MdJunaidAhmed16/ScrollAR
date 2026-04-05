@@ -122,7 +122,7 @@ app.include_router(papers.router, prefix="/api")
 app.include_router(admin.router, prefix="/api")
 
 
-@app.get("/health")
+@app.api_route("/health", methods=["GET", "HEAD"])
 async def health():
     from app.database import async_session_maker
     db_ok = False
