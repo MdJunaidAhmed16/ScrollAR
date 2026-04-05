@@ -24,6 +24,17 @@ export function Navbar() {
           >
             Saved
           </Link>
+          {user.email === "mohammedjunaidah@gmail.com" && (
+            <>
+              <span className="text-gray-600">|</span>
+              <Link
+                to="/admin"
+                className="text-sm text-purple-400 hover:text-purple-300 transition-colors font-medium"
+              >
+                ⚙ Admin
+              </Link>
+            </>
+          )}
           <span className="text-gray-600">|</span>
           <span className="text-sm text-gray-400">@{user.username}</span>
           <button

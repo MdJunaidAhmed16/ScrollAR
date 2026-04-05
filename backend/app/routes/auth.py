@@ -3,6 +3,8 @@ from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from sqlalchemy import func
+
 from app.database import get_db
 from app.dependencies import get_current_user
 from app.limiter import limiter
@@ -53,5 +55,8 @@ async def login(request: Request, payload: UserLogin, db: AsyncSession = Depends
 
 
 @router.get("/me", response_model=UserResponse)
-async def me(current_user: User = Depends(get_current_user)):
+async def me(current_user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
+    current_user.last_seen_at = func.now()
+    db.add(current_user)
+    await db.commit()
     return current_user
