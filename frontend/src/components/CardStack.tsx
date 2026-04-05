@@ -1,15 +1,16 @@
 import { AnimatePresence } from "framer-motion";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useFeed, useSwipeMutation } from "../hooks/useFeed";
 import { SwipeCard } from "./SwipeCard";
 import type { SwipeDirection } from "../types";
 
 const PREFETCH_THRESHOLD = 5; // fetch more when fewer than this many cards remain
 
-export function CardStack() {
+export function CardStack({ onButtonsReady }: { onButtonsReady?: (trigger: (d: SwipeDirection) => void) => void }) {
   const { cards, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } = useFeed();
   const swipeMutation = useSwipeMutation();
   const shownIds = useRef(new Set<string>());
+  const [forcedSwipe, setForcedSwipe] = useState<SwipeDirection | null>(null);
 
   // Track which items are displayed (filter out already-swiped locally)
   const visibleCards = cards.filter((c) => !shownIds.current.has(c.paper.id));
@@ -23,7 +24,17 @@ export function CardStack() {
   function handleSwipe(direction: SwipeDirection, paperId: string) {
     shownIds.current.add(paperId);
     swipeMutation.mutate({ paper_id: paperId, direction });
+    setForcedSwipe(null);
   }
+
+  function triggerSwipe(direction: SwipeDirection) {
+    setForcedSwipe(direction);
+  }
+
+  // Expose trigger to parent (FeedPage) via callback
+  useEffect(() => {
+    onButtonsReady?.(triggerSwipe);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (isLoading) {
     return (
@@ -72,6 +83,7 @@ export function CardStack() {
                 onSwipe={handleSwipe}
                 isTop={stackIndex === 0}
                 stackIndex={stackIndex}
+                forcedSwipe={stackIndex === 0 ? forcedSwipe : null}
               />
             );
           })}

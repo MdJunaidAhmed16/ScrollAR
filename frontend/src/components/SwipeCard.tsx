@@ -1,5 +1,5 @@
 import { motion, useAnimation } from "framer-motion";
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 import { useSwipe } from "../hooks/useSwipe";
 import { CardContent } from "./CardContent";
 import { OnboardingOverlay } from "./OnboardingOverlay";
@@ -11,14 +11,26 @@ interface Props {
   onSwipe: (direction: SwipeDirection, paperId: string) => void;
   isTop: boolean;
   stackIndex: number; // 0 = top, 1 = second, 2 = third
+  forcedSwipe?: SwipeDirection | null;
 }
 
 const EXIT_DISTANCE = 800;
 const EXIT_TRANSITION = { duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] as const };
 
-export function SwipeCard({ item, onSwipe, isTop, stackIndex }: Props) {
+export function SwipeCard({ item, onSwipe, isTop, stackIndex, forcedSwipe }: Props) {
   const controls = useAnimation();
   const isSwiping = useRef(false);
+
+  // Trigger animation when a button fires a forced swipe
+  useEffect(() => {
+    if (!forcedSwipe || !isTop || isSwiping.current) return;
+    isSwiping.current = true;
+    const exitX = forcedSwipe === "right" ? EXIT_DISTANCE : forcedSwipe === "left" ? -EXIT_DISTANCE : 0;
+    const exitY = forcedSwipe === "up" ? -EXIT_DISTANCE : 0;
+    const exitRotate = forcedSwipe === "right" ? 30 : forcedSwipe === "left" ? -30 : 0;
+    controls.start({ x: exitX, y: exitY, rotate: exitRotate, opacity: 0, transition: EXIT_TRANSITION })
+      .then(() => onSwipe(forcedSwipe, item.paper.id));
+  }, [forcedSwipe]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const { x, y, rotate, likeOpacity, nopeOpacity, saveOpacity, handleDragEnd } =
     useSwipe({
