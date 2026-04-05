@@ -48,9 +48,11 @@ def send_password_reset(to_email: str, reset_url: str) -> None:
     </div>
     """
     try:
+        logger.info("Sending password reset email to %s via %s:%s", to_email, settings.SMTP_HOST, settings.SMTP_PORT)
         _send(to_email, "ScrollAr — Reset your password", html)
+        logger.info("Password reset email sent successfully to %s", to_email)
     except Exception as e:
-        logger.error("Failed to send password reset email to %s: %s", to_email, e)
+        logger.error("Failed to send password reset email to %s: %s", to_email, e, exc_info=True)
 
 
 def send_error_alert(path: str, method: str, error: str) -> None:
