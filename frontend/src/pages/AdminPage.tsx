@@ -3,8 +3,6 @@ import { Navigate } from "react-router-dom";
 import client from "../api/client";
 import { useAuthStore } from "../store/authStore";
 
-const ADMIN_EMAIL = "mohammedjunaidah@gmail.com";
-
 interface Stats {
   users: { total: number; new_today: number; new_this_week: number; dau: number; wau: number; retained: number };
   content: { papers: number; cards: number };
@@ -44,7 +42,7 @@ function MiniBar({ data, color }: { data: { date: string; count: number }[]; col
 export function AdminPage() {
   const user = useAuthStore((s) => s.user);
 
-  if (!user || user.email !== ADMIN_EMAIL) return <Navigate to="/feed" replace />;
+  if (!user || !user.is_admin) return <Navigate to="/feed" replace />;
 
   const { data, isLoading, error, refetch } = useQuery<Stats>({
     queryKey: ["admin-stats"],

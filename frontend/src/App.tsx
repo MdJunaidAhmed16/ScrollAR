@@ -5,6 +5,8 @@ import { DesktopGate } from "./components/DesktopGate";
 import { Navbar } from "./components/Navbar";
 import { AdminPage } from "./pages/AdminPage";
 import { FeedPage } from "./pages/FeedPage";
+import { ForgotPasswordPage } from "./pages/ForgotPasswordPage";
+import { ResetPasswordPage } from "./pages/ResetPasswordPage";
 import { LoginPage } from "./pages/LoginPage";
 import { RegisterPage } from "./pages/RegisterPage";
 import { BookmarksPage } from "./pages/BookmarksPage";
@@ -48,6 +50,8 @@ function AppInner() {
             <Route path="/" element={<Navigate to="/feed" replace />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
+            <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+            <Route path="/reset-password" element={<ResetPasswordPage />} />
             <Route
               path="/feed"
               element={

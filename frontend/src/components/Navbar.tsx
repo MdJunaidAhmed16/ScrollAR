@@ -24,7 +24,7 @@ export function Navbar() {
           >
             Saved
           </Link>
-          {user.email === "mohammedjunaidah@gmail.com" && (
+          {user.is_admin && (
             <>
               <span className="text-gray-600">|</span>
               <Link

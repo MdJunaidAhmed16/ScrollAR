@@ -70,7 +70,13 @@ export function LoginPage() {
           </button>
         </form>
 
-        <p className="text-center text-sm text-gray-500 mt-6">
+        <p className="text-center text-sm text-gray-500 mt-4">
+          <Link to="/forgot-password" className="text-gray-500 hover:text-gray-300 transition-colors">
+            Forgot password?
+          </Link>
+        </p>
+
+        <p className="text-center text-sm text-gray-500 mt-3">
           No account?{" "}
           <Link to="/register" className="text-brand-500 hover:text-brand-400 font-medium">
             Create one

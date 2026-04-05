@@ -91,6 +91,34 @@ async def security_headers(request: Request, call_next):
     return response
 
 
+@app.middleware("http")
+async def error_alert_middleware(request: Request, call_next):
+    try:
+        response = await call_next(request)
+        if response.status_code >= 500:
+            import asyncio
+            from app.services.email_service import send_error_alert
+            asyncio.get_event_loop().run_in_executor(
+                None,
+                send_error_alert,
+                request.url.path,
+                request.method,
+                f"HTTP {response.status_code}",
+            )
+        return response
+    except Exception as exc:
+        import asyncio
+        from app.services.email_service import send_error_alert
+        asyncio.get_event_loop().run_in_executor(
+            None,
+            send_error_alert,
+            request.url.path,
+            request.method,
+            str(exc),
+        )
+        raise
+
+
 app.include_router(auth.router, prefix="/api")
 app.include_router(feed.router, prefix="/api")
 app.include_router(papers.router, prefix="/api")
