@@ -86,7 +86,7 @@ const BUTTONS: ButtonConfig[] = [
 
 export function ActionButtons({ onAction, disabled }: Props) {
   return (
-    <div className="flex items-center justify-center gap-5 pb-6 pt-2">
+    <div className="flex items-center justify-center gap-5">
       {BUTTONS.map(({ direction, icon, label, size, color, bg, border, shadow, ring }) => (
         <motion.button
           key={direction}

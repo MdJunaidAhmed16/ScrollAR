@@ -22,7 +22,7 @@ export function CardContent({ item }: Props) {
 
   return (
     <div
-      className="flex flex-col h-full p-6 gap-4 overflow-y-auto"
+      className="flex flex-col h-full p-6 pb-28 gap-4 overflow-y-auto"
       onPointerDown={(e) => e.stopPropagation()}
     >
       {/* Header */}
@@ -108,7 +108,7 @@ export function CardContent({ item }: Props) {
           className="text-xs text-gray-500 hover:text-gray-300 transition-colors"
           onClick={(e) => e.stopPropagation()}
         >
-          arXiv:{paper.arxiv_id} →
+          Read full paper →
         </a>
       </div>
     </div>
