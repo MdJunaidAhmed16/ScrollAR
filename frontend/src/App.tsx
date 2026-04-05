@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { DesktopGate } from "./components/DesktopGate";
 import { Navbar } from "./components/Navbar";
 import { FeedPage } from "./pages/FeedPage";
 import { LoginPage } from "./pages/LoginPage";
@@ -72,7 +73,9 @@ function AppInner() {
 export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <AppInner />
+      <DesktopGate>
+        <AppInner />
+      </DesktopGate>
     </QueryClientProvider>
   );
 }
