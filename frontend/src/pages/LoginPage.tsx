@@ -20,6 +20,7 @@ export function LoginPage() {
   const [email, setEmail] = useState("");
   const [linkSent, setLinkSent] = useState(false);
   const [sending, setSending] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
 
   // Complete magic-link sign-in if this is a callback URL
   useEffect(() => {
@@ -33,10 +34,13 @@ export function LoginPage() {
 
   async function handleGoogle() {
     clearError();
+    setGoogleLoading(true);
     try {
       await loginWithGoogle();
     } catch {
       // error set in store
+    } finally {
+      setGoogleLoading(false);
     }
   }
 
@@ -98,11 +102,20 @@ export function LoginPage() {
             {/* Google */}
             <button
               onClick={handleGoogle}
-              disabled={isLoading}
-              className="w-full flex items-center justify-center gap-3 bg-white text-gray-800 font-semibold py-3 rounded-xl hover:bg-gray-100 disabled:opacity-50 transition-colors"
+              disabled={googleLoading || isLoading}
+              className="w-full flex items-center justify-center gap-3 bg-white text-gray-800 font-semibold py-3 rounded-xl hover:bg-gray-100 disabled:opacity-60 transition-colors"
             >
-              <GoogleIcon />
-              Continue with Google
+              {googleLoading ? (
+                <>
+                  <div className="w-5 h-5 border-2 border-gray-400 border-t-gray-800 rounded-full animate-spin" />
+                  Signing in…
+                </>
+              ) : (
+                <>
+                  <GoogleIcon />
+                  Continue with Google
+                </>
+              )}
             </button>
 
             {/* Divider */}

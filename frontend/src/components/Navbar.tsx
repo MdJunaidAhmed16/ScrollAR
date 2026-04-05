@@ -78,25 +78,13 @@ export function Navbar() {
           {/* Divider */}
           <div className="w-px h-5 bg-white/10 mx-1" />
 
-          {/* Username pill */}
-          <span
-            className="text-sm font-medium px-3 py-1.5 rounded-full border"
-            style={{
-              color: "#a5b4fc",
-              background: "rgba(99,102,241,0.08)",
-              borderColor: "rgba(99,102,241,0.2)",
-            }}
-          >
-            @{user.username}
-          </span>
-
-          {/* Sign out */}
+          {/* Sign out — icon only, always visible */}
           <button
             onClick={handleLogout}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium text-gray-500 hover:text-red-400 hover:bg-red-500/8 border border-transparent hover:border-red-500/20 transition-all duration-150"
+            title="Sign out"
+            className="flex items-center justify-center w-9 h-9 rounded-full text-gray-500 hover:text-red-400 hover:bg-red-500/10 border border-transparent hover:border-red-500/20 transition-all duration-150"
           >
             <SignOutIcon />
-            <span className="hidden sm:inline">Sign out</span>
           </button>
         </div>
       )}
