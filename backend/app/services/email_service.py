@@ -1,43 +1,36 @@
 import logging
-import smtplib
-import ssl
 import time
-from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
 
 from app.config import settings
 
 logger = logging.getLogger("scrollar")
 
-# Simple in-memory rate limit for error alerts: max 1 per 5 minutes
 _last_alert_time: float = 0.0
-_ALERT_COOLDOWN = 300  # seconds
+_ALERT_COOLDOWN = 300  # seconds — max 1 crash alert per 5 minutes
 
 
 def _send(to: str, subject: str, html: str) -> None:
-    if not settings.SMTP_USER or not settings.SMTP_PASSWORD:
-        logger.warning("Email not configured — skipping send to %s", to)
+    if not settings.SMTP_PASSWORD:  # SMTP_PASSWORD reused as RESEND_API_KEY
+        logger.warning("RESEND_API_KEY not configured — skipping email to %s", to)
         return
 
-    msg = MIMEMultipart("alternative")
-    msg["Subject"] = subject
-    msg["From"] = f"ScrollAr <{settings.SMTP_USER}>"
-    msg["To"] = to
-    msg.attach(MIMEText(html, "html"))
+    import resend
+    resend.api_key = settings.SMTP_PASSWORD
 
-    ctx = ssl.create_default_context()
-    with smtplib.SMTP(settings.SMTP_HOST, settings.SMTP_PORT) as server:
-        server.ehlo()
-        server.starttls(context=ctx)
-        server.login(settings.SMTP_USER, settings.SMTP_PASSWORD)
-        server.sendmail(settings.SMTP_USER, to, msg.as_string())
+    resend.Emails.send({
+        "from": f"ScrollAr <{settings.SMTP_USER}>",
+        "to": [to],
+        "subject": subject,
+        "html": html,
+    })
 
 
 def send_password_reset(to_email: str, reset_url: str) -> None:
     html = f"""
     <div style="font-family:sans-serif;max-width:480px;margin:auto;padding:32px;">
       <h2 style="color:#818cf8;">ScrollAr — Password Reset</h2>
-      <p>Click the button below to reset your password. This link expires in <strong>1 hour</strong>.</p>
+      <p>Click the button below to reset your password.
+         This link expires in <strong>1 hour</strong>.</p>
       <a href="{reset_url}"
          style="display:inline-block;margin:24px 0;padding:12px 28px;
                 background:#818cf8;color:#fff;border-radius:8px;
@@ -62,7 +55,7 @@ def send_error_alert(path: str, method: str, error: str) -> None:
 
     now = time.time()
     if now - _last_alert_time < _ALERT_COOLDOWN:
-        return  # rate-limited
+        return
     _last_alert_time = now
 
     html = f"""
@@ -72,7 +65,9 @@ def send_error_alert(path: str, method: str, error: str) -> None:
         <tr><td style="padding:6px 0;color:#6b7280;">Endpoint</td>
             <td style="padding:6px 0;"><code>{method} {path}</code></td></tr>
         <tr><td style="padding:6px 0;color:#6b7280;">Error</td>
-            <td style="padding:6px 0;color:#ef4444;"><pre style="margin:0;white-space:pre-wrap;">{error[:1000]}</pre></td></tr>
+            <td style="padding:6px 0;color:#ef4444;">
+              <pre style="margin:0;white-space:pre-wrap;">{error[:1000]}</pre>
+            </td></tr>
       </table>
     </div>
     """
