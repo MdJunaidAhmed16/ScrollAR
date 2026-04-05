@@ -1,8 +1,8 @@
 import { useMotionValue, useTransform } from "framer-motion";
 import type { SwipeDirection } from "../types";
 
-const SWIPE_THRESHOLD = 100;   // px offset to trigger swipe
-const VELOCITY_THRESHOLD = 500; // px/s
+const SWIPE_THRESHOLD = 120;   // px offset to trigger swipe
+const VELOCITY_THRESHOLD = 600; // px/s
 
 interface UseSwipeOptions {
   onSwipe: (direction: SwipeDirection) => void;

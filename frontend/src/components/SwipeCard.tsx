@@ -1,4 +1,5 @@
 import { motion, useAnimation } from "framer-motion";
+import { useRef } from "react";
 import { useSwipe } from "../hooks/useSwipe";
 import { CardContent } from "./CardContent";
 import { OnboardingOverlay } from "./OnboardingOverlay";
@@ -12,15 +13,30 @@ interface Props {
   stackIndex: number; // 0 = top, 1 = second, 2 = third
 }
 
+const EXIT_DISTANCE = 800;
+const EXIT_TRANSITION = { duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] as const };
+
 export function SwipeCard({ item, onSwipe, isTop, stackIndex }: Props) {
   const controls = useAnimation();
+  const isSwiping = useRef(false);
+
   const { x, y, rotate, likeOpacity, nopeOpacity, saveOpacity, handleDragEnd } =
     useSwipe({
       onSwipe: (direction) => {
-        // Animate card off screen, then notify parent
-        const exitX = direction === "right" ? 600 : direction === "left" ? -600 : 0;
-        const exitY = direction === "up" ? -600 : 0;
-        controls.start({ x: exitX, y: exitY, opacity: 0, transition: { duration: 0.3 } }).then(() => {
+        if (isSwiping.current) return;
+        isSwiping.current = true;
+
+        const exitX = direction === "right" ? EXIT_DISTANCE : direction === "left" ? -EXIT_DISTANCE : 0;
+        const exitY = direction === "up" ? -EXIT_DISTANCE : 0;
+        const exitRotate = direction === "right" ? 30 : direction === "left" ? -30 : 0;
+
+        controls.start({
+          x: exitX,
+          y: exitY,
+          rotate: exitRotate,
+          opacity: 0,
+          transition: EXIT_TRANSITION,
+        }).then(() => {
           onSwipe(direction, item.paper.id);
         });
       },
@@ -45,6 +61,7 @@ export function SwipeCard({ item, onSwipe, isTop, stackIndex }: Props) {
       drag={isTop ? true : false}
       dragConstraints={{ left: 0, right: 0, top: 0, bottom: 0 }}
       dragElastic={0.7}
+      dragMomentum={false}
       onDragEnd={isTop ? handleDragEnd : undefined}
       whileTap={isTop ? { scale: 0.98 } : undefined}
     >
