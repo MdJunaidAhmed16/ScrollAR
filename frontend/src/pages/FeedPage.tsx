@@ -11,13 +11,13 @@ export function FeedPage() {
       {/* Card + floating buttons container */}
       <div className="relative w-full max-w-sm flex-1 max-h-[680px]">
         {/* Card stack fills the container */}
-        <div className="absolute inset-0 pb-24">
+        <div className="absolute inset-0 pb-20">
           <CardStack onButtonsReady={(fn) => { triggerRef.current = fn; }} />
         </div>
 
         {/* Buttons float at the bottom, over the card */}
         <div
-          className="absolute bottom-0 left-0 right-0 z-20 rounded-b-3xl pt-6 pb-4"
+          className="absolute bottom-0 left-0 right-0 z-20 rounded-b-3xl pt-4 pb-3"
           style={{
             background: "linear-gradient(to top, rgba(14,14,26,0.92) 60%, transparent)",
           }}

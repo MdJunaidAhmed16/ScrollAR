@@ -22,7 +22,7 @@ export function CardContent({ item }: Props) {
 
   return (
     <div
-      className="flex flex-col h-full p-6 pb-28 gap-4 overflow-y-auto"
+      className="flex flex-col h-full p-6 pb-20 gap-4 overflow-y-auto"
       onPointerDown={(e) => e.stopPropagation()}
     >
       {/* Header */}
