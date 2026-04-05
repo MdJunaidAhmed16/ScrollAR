@@ -1,36 +1,25 @@
-import logging
-import smtplib
-import ssl
 import time
-from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
 
 from app.config import settings
-
-logger = logging.getLogger("scrollar")
 
 _last_alert_time: float = 0.0
 _ALERT_COOLDOWN = 300  # max 1 crash alert per 5 minutes
 
 
 def _send(to: str, subject: str, html: str) -> None:
-    if not settings.SMTP_USER or not settings.SMTP_PASSWORD:
-        logger.warning("Email not configured — skipping send to %s", to)
+    if not settings.SMTP_PASSWORD:  # SMTP_PASSWORD holds the Resend API key
+        print("[EMAIL] RESEND_API_KEY not set — skipping", flush=True)
         return
 
-    msg = MIMEMultipart("alternative")
-    msg["Subject"] = subject
-    msg["From"] = f"ScrollAr <{settings.SMTP_USER}>"
-    msg["To"] = to
-    msg.attach(MIMEText(html, "html"))
+    import resend
+    resend.api_key = settings.SMTP_PASSWORD
 
-    ctx = ssl.create_default_context()
-    with smtplib.SMTP(settings.SMTP_HOST, settings.SMTP_PORT, timeout=15) as server:
-        server.ehlo()
-        server.starttls(context=ctx)
-        server.ehlo()
-        server.login(settings.SMTP_USER, settings.SMTP_PASSWORD)
-        server.sendmail(settings.SMTP_USER, to, msg.as_string())
+    resend.Emails.send({
+        "from": f"ScrollAr <{settings.SMTP_USER}>",
+        "to": [to],
+        "subject": subject,
+        "html": html,
+    })
 
 
 def send_password_reset(to_email: str, reset_url: str) -> None:
@@ -51,12 +40,12 @@ def send_password_reset(to_email: str, reset_url: str) -> None:
     </div>
     """
     try:
-        print(f"[EMAIL] Sending reset to {to_email} via {settings.SMTP_HOST}:{settings.SMTP_PORT}", flush=True)
+        print(f"[EMAIL] Sending reset to {to_email} via Resend", flush=True)
         _send(to_email, "ScrollAr — Reset your password", html)
         print(f"[EMAIL] Sent successfully to {to_email}", flush=True)
     except Exception as e:
         import traceback
-        print(f"[EMAIL] FAILED to send to {to_email}: {e}", flush=True)
+        print(f"[EMAIL] FAILED: {e}", flush=True)
         traceback.print_exc()
 
 
@@ -86,4 +75,4 @@ def send_error_alert(path: str, method: str, error: str) -> None:
     try:
         _send(settings.ALERT_EMAIL, "🚨 ScrollAr server error", html)
     except Exception as e:
-        logger.error("Failed to send error alert: %s", e)
+        print(f"[EMAIL] Failed to send error alert: {e}", flush=True)
