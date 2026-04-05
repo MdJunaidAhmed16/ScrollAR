@@ -1,28 +1,35 @@
 import logging
+import smtplib
+import ssl
 import time
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 
 from app.config import settings
 
 logger = logging.getLogger("scrollar")
 
 _last_alert_time: float = 0.0
-_ALERT_COOLDOWN = 300  # seconds — max 1 crash alert per 5 minutes
+_ALERT_COOLDOWN = 300  # max 1 crash alert per 5 minutes
 
 
 def _send(to: str, subject: str, html: str) -> None:
-    if not settings.SMTP_PASSWORD:  # SMTP_PASSWORD reused as RESEND_API_KEY
-        logger.warning("RESEND_API_KEY not configured — skipping email to %s", to)
+    if not settings.SMTP_USER or not settings.SMTP_PASSWORD:
+        logger.warning("Email not configured — skipping send to %s", to)
         return
 
-    import resend
-    resend.api_key = settings.SMTP_PASSWORD
+    msg = MIMEMultipart("alternative")
+    msg["Subject"] = subject
+    msg["From"] = f"ScrollAr <{settings.SMTP_USER}>"
+    msg["To"] = to
+    msg.attach(MIMEText(html, "html"))
 
-    resend.Emails.send({
-        "from": f"ScrollAr <{settings.SMTP_USER}>",
-        "to": [to],
-        "subject": subject,
-        "html": html,
-    })
+    ctx = ssl.create_default_context()
+    with smtplib.SMTP(settings.SMTP_HOST, settings.SMTP_PORT) as server:
+        server.ehlo()
+        server.starttls(context=ctx)
+        server.login(settings.SMTP_USER, settings.SMTP_PASSWORD)
+        server.sendmail(settings.SMTP_USER, to, msg.as_string())
 
 
 def send_password_reset(to_email: str, reset_url: str) -> None:
