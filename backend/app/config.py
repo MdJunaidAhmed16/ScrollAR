@@ -37,8 +37,8 @@ class Settings(BaseSettings):
     ADMIN_EMAIL: str = ""  # email of the superuser account
 
     # Email (SMTP) — for password resets and error alerts
-    SMTP_HOST: str = "smtp.zoho.com"
-    SMTP_PORT: int = 587
+    SMTP_HOST: str = "smtp.zoho.in"
+    SMTP_PORT: int = 465
     SMTP_USER: str = ""        # Gmail address used to send
     SMTP_PASSWORD: str = ""    # Gmail App Password
     ALERT_EMAIL: str = ""      # where crash alerts are sent (your personal email)
