@@ -10,12 +10,14 @@ if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
 # Override sqlalchemy.url from environment variable if set
-db_url = os.environ.get("DATABASE_URL_SYNC")
+# Normalize postgres:// -> postgresql:// for psycopg2 compatibility
+db_url = os.environ.get("DATABASE_URL_SYNC") or os.environ.get("DATABASE_URL", "")
+db_url = db_url.replace("postgresql+asyncpg://", "postgresql://").replace("postgres://", "postgresql://")
 if db_url:
     config.set_main_option("sqlalchemy.url", db_url)
 
-# Import all models so Alembic can detect them
-from app.database import Base
+# Import Base from app.base to avoid triggering async engine creation in app.database
+from app.base import Base
 import app.models  # noqa: F401 - registers all models
 
 target_metadata = Base.metadata
